@@ -198,35 +198,58 @@ def update_slider_state(toggle_val, current_slider_val):
      Input('input-years', 'value'), Input('input-cost', 'value')]
 )
 def update_financials(threshold, success_rate, years, counseling_cost):
+    # 1. Input Validation Guardrail
     if None in [threshold, success_rate, years, counseling_cost]:
         raise PreventUpdate
 
-    y_pred_custom = (df['LR_Risk_Probability'] >= threshold).astype(int)
-    y_actual = df['Dropout']
+    # 2. Extract values as flat numpy arrays to strip mismatched pandas indices
+    probabilities = df['LR_Risk_Probability'].fillna(0).values
+    actuals = df['Actual_Dropout'].fillna(0).values
+
+    # 3. Dynamic Thresholding
+    predictions = (probabilities >= float(threshold)).astype(int)
+
+    # 4. Confusion Matrix Calculation
+    # Bitwise operations on flat arrays prevent pandas index misalignment crashes
+    tp = int(((predictions == 1) & (actuals == 1)).sum())
+    fp = int(((predictions == 1) & (actuals == 0)).sum())
+    tn = int(((predictions == 0) & (actuals == 0)).sum())
+    fn = int(((predictions == 0) & (actuals == 1)).sum())
+
+    # 5. Financial Algorithm
+    # Convert percentage input (e.g., 30) to decimal (0.30)
+    success_decimal = float(success_rate) / 100.0
     
-    tp = int(sum((y_pred_custom == 1) & (y_actual == 1)))
-    fp = int(sum((y_pred_custom == 1) & (y_actual == 0)))
-    tn = int(sum((y_pred_custom == 0) & (y_actual == 0)))
-    fn = int(sum((y_pred_custom == 0) & (y_actual == 1)))
+    # Calculate how many of the true dropouts we actually save
+    students_saved = tp * success_decimal
     
-    students_retained = tp * (success_rate / 100)
-    revenue_loss_per_student = 40000 - (10000 * years)
-    total_revenue_saved = students_retained * revenue_loss_per_student
+    # Calculate revenue retained per saved student ($40k total minus what they already paid)
+    revenue_per_student = 40000.0 - (10000.0 * float(years))
     
-    intervention_cost = (tp + fp) * counseling_cost
+    total_revenue_saved = students_saved * revenue_per_student
+    
+    # We pay the counseling cost for EVERY student flagged by the model (TP + FP)
+    intervention_cost = (tp + fp) * float(counseling_cost)
+    
     net_roi = total_revenue_saved - intervention_cost
-    
+
+    # 6. Format Outputs
     str_rev = f"${total_revenue_saved:,.0f}"
     str_cost = f"${intervention_cost:,.0f}"
     str_roi = f"${net_roi:,.0f}"
-    
+
+    # 7. Render Heatmap
     z = [[tn, fp], [fn, tp]]
     x = ['Predicted Retained (0)', 'Predicted Dropout (1)']
     y = ['Actual Retained (0)', 'Actual Dropout (1)']
     
     fig = ff.create_annotated_heatmap(z, x=x, y=y, colorscale='Blues', showscale=True)
-    fig.update_layout(title_text='Live Logistic Regression Confusion Matrix', title_x=0.5, margin=dict(t=50, l=20, r=20, b=20))
-    
+    fig.update_layout(
+        title_text='Live Logistic Regression Confusion Matrix', 
+        title_x=0.5, 
+        margin=dict(t=50, l=20, r=20, b=20)
+    )
+
     return str_rev, str_cost, str_roi, fig
 
 if __name__ == '__main__':
