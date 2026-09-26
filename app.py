@@ -204,7 +204,7 @@ def update_financials(threshold, success_rate, years, counseling_cost):
 
     # 2. Extract values as flat numpy arrays to strip mismatched pandas indices
     probabilities = df['LR_Risk_Probability'].fillna(0).values
-    actuals = df['Actual_Dropout'].fillna(0).values
+    actuals = df['Dropout'].fillna(0).values
 
     # 3. Dynamic Thresholding
     predictions = (probabilities >= float(threshold)).astype(int)
