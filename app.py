@@ -6,24 +6,19 @@ import pandas as pd
 import plotly.figure_factory as ff
 
 # ==========================================
-# FIX #3: THE DATA LOOKS "TOO PERFECT" 
+# 1. LOAD REAL DATA DIRECTLY FROM GITHUB 
 # ==========================================
-# We are dropping the synthetic random data. You must export a CSV from your 
-# Jupyter Notebook containing your test dataset + the model predictions.
-# Required columns: Student_ID, Semester_Average_Grade, Parental_Income_Level, 
-# Semester_Approved_Units, Semester_Credited_Units, Age, Actual_Dropout, LR_Risk_Probability
-
-# Use the "Raw" URL from your GitHub repository so Render never loses the file path
-github_csv_url = "https://github.com/josephakpro/Student_Retention/blob/main/Tableau_Student_Retention_Dashboard.csv"
+# Using the "raw.githubusercontent" URL so Pandas reads the CSV, not the webpage HTML
+github_csv_url = "https://raw.githubusercontent.com/josephakpro/Student_Retention/main/Tableau_Student_Retention_Dashboard.csv"
 
 try:
     df = pd.read_csv(github_csv_url)
 except Exception as e:
     print(f"⚠️ ERROR: Could not load data from GitHub. Check the URL. Details: {e}")
-    # Create a dummy dataframe just so the app doesn't fatally crash during debugging
+    # FIXED: Replaced 'Dropout' with 'Actual_Dropout' to prevent KeyError in callbacks
     df = pd.DataFrame(columns=['Student_ID', 'Semester_Average_Grade', 'Parental_Income_Level', 
                                'Semester_Approved_Units', 'Semester_Credited_Units', 'Age', 
-                               'Dropout', 'LR_Risk_Probability'])
+                               'Actual_Dropout', 'LR_Risk_Probability'])
 
 # Apply the Pre-Trained Decision Tree Persona Logic
 def assign_final_persona(row, threshold=0.3):
@@ -48,7 +43,6 @@ def assign_final_persona(row, threshold=0.3):
 
 df['Persona'] = df.apply(lambda row: assign_final_persona(row), axis=1)
 
-# FIX #1: ADVISOR VIEW IS BACKWARDS 
 # Filter out the "Not At Risk" students so the table ONLY shows the flagged students
 action_df = df[df['Persona'] != "Not At Risk"].copy()
 
@@ -69,8 +63,7 @@ kpi_style = {
 
 app.layout = html.Div(style={'fontFamily': 'Arial, sans-serif', 'maxWidth': '1200px', 'margin': 'auto'}, children=[
     
-    # FIX #2: THE "EMPTY ROOM" PROBLEM
-    # Added clear business context for executives opening the app cold
+    # Business context for executives opening the app cold
     html.Div(style={'backgroundColor': '#2c3e50', 'color': 'white', 'padding': '20px', 'borderRadius': '5px', 'marginBottom': '20px'}, children=[
         html.H1("University Student Retention System", style={'margin': '0 0 10px 0'}),
         html.P("This decision support system utilizes a two-stage machine learning architecture. A Logistic Regression model acts as the financial trigger to identify at-risk students, while a Decision Tree algorithm segments those flagged students into actionable intervention personas for academic advisors.", style={'fontSize': '16px', 'margin': '0'})
@@ -131,15 +124,13 @@ app.layout = html.Div(style={'fontFamily': 'Arial, sans-serif', 'maxWidth': '120
                     dcc.Slider(id='slider-threshold', min=0, max=1, step=0.01, value=0.30, 
                                marks={0: '0', 0.3: '0.3', 1: '1'}, disabled=True),
                     
-                    # FIX #5: VISUAL PROOF OF THE "PEAK"
-                    # Pulls the static curve image saved from your Jupyter Notebook
                     html.Div(style={'marginTop': '20px', 'marginBottom': '20px', 'textAlign': 'center'}, children=[
                         html.Label("Profit Curve Optimization", style={'fontWeight': 'bold', 'fontSize': '12px', 'color': '#7f8c8d'}),
                         html.Img(src='/assets/profit_curve.png', style={'width': '100%', 'borderRadius': '5px', 'boxShadow': '0 2px 4px 0 rgba(0,0,0,0.1)'})
                     ]),
                     
-                    # FIX #4: ROI SIMULATOR GUARDRAILS (Added min/max attributes)
-                    html.Label("Retention Success Rate ($x\%$):"),
+                    # FIXED: Added 'r' before the string to fix the invalid escape sequence warning
+                    html.Label(r"Retention Success Rate ($x\%$):"),
                     dcc.Input(id='input-success-rate', type='number', min=0, max=100, value=30, style={'width': '100%', 'marginBottom': '15px'}),
                     
                     html.Label("Average Years Completed ($y$):"),
