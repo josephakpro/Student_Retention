@@ -130,10 +130,10 @@ app.layout = html.Div(style={'fontFamily': 'Arial, sans-serif', 'maxWidth': '120
                     ]),
                     
                     # FIXED: Added 'r' before the string to fix the invalid escape sequence warning
-                    html.Label(r"Retention Success Rate ($x\%$):"),
+                    html.Label(r"Estimated Retention Success Rate (%):"),
                     dcc.Input(id='input-success-rate', type='number', min=0, max=100, value=30, style={'width': '100%', 'marginBottom': '15px'}),
                     
-                    html.Label("Average Years Completed ($y$):"),
+                    html.Label("Average Years Completed:"),
                     dcc.Input(id='input-years', type='number', min=0, max=4, value=1, style={'width': '100%', 'marginBottom': '15px'}),
                     
                     html.Label("Cost per Counseling Session ($):"),
@@ -202,7 +202,7 @@ def update_financials(threshold, success_rate, years, counseling_cost):
         raise PreventUpdate
 
     y_pred_custom = (df['LR_Risk_Probability'] >= threshold).astype(int)
-    y_actual = df['Actual_Dropout']
+    y_actual = df['Dropout']
     
     tp = int(sum((y_pred_custom == 1) & (y_actual == 1)))
     fp = int(sum((y_pred_custom == 1) & (y_actual == 0)))
