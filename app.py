@@ -58,6 +58,7 @@ df['Persona'] = df.apply(lambda row: assign_final_persona(row), axis=1)
 # 2. DASH APP INITIALIZATION & LAYOUT
 # ==========================================
 app = dash.Dash(__name__)
+server = app.server
 
 # CSS Styles for clean cards
 card_style = {
