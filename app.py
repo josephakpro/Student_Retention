@@ -3,7 +3,7 @@ from dash import dcc, html, dash_table
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 import pandas as pd
-import plotly.figure_factory as ff
+import plotly.express as px
 
 # ==========================================
 # 1. LOAD REAL DATA DIRECTLY FROM GITHUB 
@@ -238,12 +238,20 @@ def update_financials(threshold, success_rate, years, counseling_cost):
     str_cost = f"${intervention_cost:,.0f}"
     str_roi = f"${net_roi:,.0f}"
 
-    # 7. Render Heatmap
+    # 7. Render Heatmap (UPDATED FOR PLOTLY 7.1.0 COMPATIBILITY)
     z = [[tn, fp], [fn, tp]]
     x = ['Predicted Retained (0)', 'Predicted Dropout (1)']
     y = ['Actual Retained (0)', 'Actual Dropout (1)']
     
-    fig = ff.create_annotated_heatmap(z, x=x, y=y, colorscale='Blues', showscale=True)
+    fig = px.imshow(
+        z, 
+        x=x, 
+        y=y, 
+        text_auto=True, 
+        color_continuous_scale='Blues',
+        aspect='auto'
+    )
+    
     fig.update_layout(
         title_text='Live Logistic Regression Confusion Matrix', 
         title_x=0.5, 
