@@ -18,7 +18,7 @@ except Exception as e:
     # FIXED: Replaced 'Dropout' with 'Actual_Dropout' to prevent KeyError in callbacks
     df = pd.DataFrame(columns=['Student_ID', 'Semester_Average_Grade', 'Parental_Income_Level', 
                                'Semester_Approved_Units', 'Semester_Credited_Units', 'Age', 
-                               'Actual_Dropout', 'LR_Risk_Probability'])
+                               'Dropout', 'LR_Risk_Probability'])
 
 # Apply the Pre-Trained Decision Tree Persona Logic
 def assign_final_persona(row, threshold=0.3):
