@@ -14,7 +14,7 @@ import plotly.figure_factory as ff
 # Semester_Approved_Units, Semester_Credited_Units, Age, Actual_Dropout, LR_Risk_Probability
 
 # Use the "Raw" URL from your GitHub repository so Render never loses the file path
-github_csv_url = "https://raw.githubusercontent.com/josephakpro/Student_Retention/main/Tableau_Student_Retention_Dashboard.csv"
+github_csv_url = "https://github.com/josephakpro/Student_Retention/blob/main/Tableau_Student_Retention_Dashboard.csv"
 
 try:
     df = pd.read_csv(github_csv_url)
